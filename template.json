@@ -120,8 +120,11 @@
         "Cosmos": {
             "defaultValue": "[concat('cosmos', parameters('ResourceSuffix'))]",
             "type": "String"
+        },
+        "LogAnalystics": {
+            "defaultValue": "[concat('loganal', parameters('ResourceSuffix'))]",
+            "type": "String"
         }
-
         
     },
     "variables": {
@@ -182,6 +185,33 @@
             }
         },
         {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2017-03-15-preview",
+            "name": "[parameters('LogAnalystics')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "name": "pergb2018"
+                }
+            }
+        },
+        {
+            "type": "microsoft.insights/components",
+            "apiVersion": "2020-02-02-preview",
+            "name": "[parameters('FunctionApp')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('LogAnalystics'))]"
+            ],
+            "properties": {
+                "ApplicationId": "[parameters('FunctionApp')]",
+                "Application_Type": "web",
+                "Flow_Type": "Redfield",
+                "Request_Source": "IbizaAIExtensionEnablementBlade",
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('LogAnalystics'))]"
+            }
+        },
+        {
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "apiVersion": "2022-11-15",
             "name": "[parameters('Cosmos')]",
@@ -226,11 +256,7 @@
                     }
                 ],
                 "cors": [],
-                "capabilities": [
-                    {
-                        "name": "EnableServerless"
-                    }
-                ],
+                "capabilities": [],
                 "ipRules": [],
                 "backupPolicy": {
                     "type": "Periodic",
@@ -332,9 +358,9 @@
             "name": "[parameters('ServerFarm')]",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "B2",
+                "name": "B3",
                 "tier": "Basic",
-                "size": "B2",
+                "size": "B3",
                 "family": "B",
                 "capacity": 1
             },
@@ -575,7 +601,8 @@
             "name": "[parameters('FunctionApp')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarm'))]"
+                "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarm'))]",
+                "[resourceId('Microsoft.Insights/components', parameters('FunctionApp'))]"
             ],
             "tags": {
                   },
@@ -889,6 +916,14 @@
                         {
                             "name": "LIST_OF_COMMA_SEPARATED_URLS",
                             "value": "[ parameters('ListOfCommaSeparatedURLs')]" 
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('Microsoft.Insights/components', parameters('FunctionApp')), '2020-02-02').InstrumentationKey]" 
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference(resourceId('Microsoft.Insights/components', parameters('FunctionApp')), '2020-02-02').ConnectionString]" 
                         }
                     ]
                 },
@@ -942,7 +977,7 @@
             "apiVersion": "2022-03-01",
             "name": "[format('{0}/{1}', parameters('FunctionApp'), 'web')]",
             "properties": {
-            "repoUrl": "https://github.com/samelhousseini/km-openai/",
+            "repoUrl": "https://github.com/labcsu/Knowledge-Mining-with-OpenAI/",
             "branch": "main",
             "isManualIntegration": true
             },
@@ -1089,7 +1124,10 @@
                         "mode": "LastWriterWins",
                         "conflictResolutionPath": "/_ts"
                     }
-                }
+                },
+                "options": {
+                    "throughput": 5000
+                  }
             }
         },
         {
@@ -1292,5 +1330,3 @@
         }
     }
 }
-
-
