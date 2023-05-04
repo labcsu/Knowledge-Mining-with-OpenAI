@@ -17,7 +17,7 @@ from utils import redis_helpers
 global_params_dict = {
     'enable_unified_search': False,
     'enable_redis_search': True,
-    'enable_cognitive_search': False,
+    'enable_cognitive_search': True,
     'evaluate_step': False,
     'check_adequacy': False,
     'check_intent': False
@@ -87,6 +87,8 @@ def handle_message(q):
     emit('new_message', "Query: " + q + '\n') 
     answer, sources, likely_sources, s_id = agents_sid[request.sid].run(q, redis_conn, request.sid)
     sources_str = ''
+
+    send('Answer:'+ answer)
     if len(sources) > 0:
         for s in sources: 
             try:
