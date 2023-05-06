@@ -198,7 +198,7 @@ def create_skillset():
     merge_skill = MergeSkill(name="merge_skill", inputs=[text_input, image_text_input, offsetstex_input], outputs=[merge_text_output],
                              context="/document", description="Extract text (plain and structured) from image")
     
-    imageanalsis_skill = ImageAnalysisSkill(name="imageanalsis_skill", inputs=[image_input], outputs=[tags_output],
+    imageanalysis_skill = ImageAnalysisSkill(name="imageanalsis_skill", inputs=[image_input], outputs=[tags_output],
                              context="/document/normalized_images/*", description="Extract text (plain and structured) from image")
 
     oai_ws = WebApiSkill(name="custom_doc_cracking_skill", 
@@ -208,7 +208,7 @@ def create_skillset():
                             uri=COG_SEARCH_CUSTOM_FUNC, 
                             timeout='PT230S')
 
-    skillset = SearchIndexerSkillset(name=KB_SKILLSET_NAME, skills=[ocr_skill,merge_skill, imageanalsis_skill,oai_ws], 
+    skillset = SearchIndexerSkillset(name=KB_SKILLSET_NAME, skills=[ocr_skill,merge_skill, imageanalysis_skill,oai_ws], 
                                         description="OpenAI skillset",
                                         cognitive_services_account=CognitiveServicesAccountKey(key=COG_SERV_KEY))
 
