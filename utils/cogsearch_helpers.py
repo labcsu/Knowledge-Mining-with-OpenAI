@@ -111,6 +111,8 @@ def create_index():
             SimpleField(name="metadata_storage_size", type=SearchFieldDataType.Double, facetable=True, filterable=True, sortable=True),
             SearchableField(name="metadata_creation_date",  type=SearchFieldDataType.DateTimeOffset, facetable=True, filterable=True, sortable=True),
             SearchableField(name="merged_text",  type=SearchFieldDataType.String, facetable=True, filterable=True),
+            SimpleField(name="images_text",  type="Collection(Edm.String)", facetable=True, filterable=True),
+            SimpleField(name="imageTags",  type="Collection(Edm.String)",facetable=True, filterable=True),
         ]
     
     cors_options = CorsOptions(allowed_origins=["*"], max_age_in_seconds=60)
@@ -171,14 +173,42 @@ def create_skillset():
     filename_input = InputFieldMappingEntry(name="filename", source="/document/metadata_storage_name")
     ws_output = OutputFieldMappingEntry(name="status", target_name="status")
 
+    # ocr
+    image_input = InputFieldMappingEntry(name="image", source="/document/normalized_images/*")
+    image_text_output = OutputFieldMappingEntry(name="text", target_name="images_text")
+
+    # merged
+    text_input = InputFieldMappingEntry(name="text", source="/document/content")
+    image_text_input = InputFieldMappingEntry(name="itemsToInsert", source="/document/normalized_images/*/images_text")
+    offsetstex_input = InputFieldMappingEntry(name="offsets", source="/document/normalized_images/*/contentOffset")
+    merge_text_output = OutputFieldMappingEntry(name="mergedText", target_name="merged_text")
+
+    # imageanalysis
+    tags_output = OutputFieldMappingEntry(name="tags", target_name="imageTags")
+
+    # ws
+    merged_text_intput = InputFieldMappingEntry(name="content", source="/document/merged_text")
+
+    ocr_skill = OcrSkill(name="ocr_skill", inputs=[image_input], outputs=[image_text_output],
+                         context="/document/normalized_images/*", description="Extract text (plain and structured) from image",
+                         should_detect_orientation=True,
+                         default_language_code="en", line_ending="Space"
+                         )
+
+    merge_skill = MergeSkill(name="merge_skill", inputs=[text_input, image_text_input, offsetstex_input], outputs=[merge_text_output],
+                             context="/document", description="Extract text (plain and structured) from image")
+    
+    imageanalsis_skill = ImageAnalysisSkill(name="imageanalsis_skill", inputs=[image_input], outputs=[tags_output],
+                             context="/document/normalized_images/*", description="Extract text (plain and structured) from image")
+
     oai_ws = WebApiSkill(name="custom_doc_cracking_skill", 
-                            inputs=[id_input, content_input, ts_input, path_input, filename_input], 
+                            inputs=[id_input, merged_text_intput, ts_input, path_input, filename_input], 
                             outputs=[ws_output], 
                             context="/document", 
                             uri=COG_SEARCH_CUSTOM_FUNC, 
                             timeout='PT230S')
 
-    skillset = SearchIndexerSkillset(name=KB_SKILLSET_NAME, skills=[oai_ws], 
+    skillset = SearchIndexerSkillset(name=KB_SKILLSET_NAME, skills=[ocr_skill,merge_skill, imageanalsis_skill,oai_ws], 
                                         description="OpenAI skillset",
                                         cognitive_services_account=CognitiveServicesAccountKey(key=COG_SERV_KEY))
 
@@ -216,7 +246,18 @@ def create_indexer(container):
                          ],
         output_field_mappings = [
                            { "sourceFieldName": "/document/status","targetFieldName": "status", "mappingFunction":None}, 
-                        ]
+                           { "sourceFieldName": "/document/normalized_images/*/images_text", "targetFieldName": "images_text", "mappingFunction": None},
+                           { "sourceFieldName": "/document/normalized_images/*/imageTags/*/name", "targetFieldName": "imageTags", "mappingFunction": None} 
+                        ],
+        parameters=
+            {  "maxFailedItems": -1,
+               "maxFailedItemsPerBatch": -1,
+                "configuration":   {
+                "dataToExtract": "contentAndMetadata",
+                "parsingMode": "default",
+                "imageAction": "generateNormalizedImages"
+                }
+            }
         )
 
     try:
