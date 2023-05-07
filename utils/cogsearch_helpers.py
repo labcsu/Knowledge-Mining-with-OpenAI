@@ -192,7 +192,7 @@ def create_skillset():
     ocr_skill = OcrSkill(name="ocr_skill", inputs=[image_input], outputs=[image_text_output],
                          context="/document/normalized_images/*", description="Extract text (plain and structured) from image",
                          should_detect_orientation=True,
-                         default_language_code="en", line_ending="Space"
+                         default_language_code="zh-Hant", line_ending="Space"
                          )
 
     merge_skill = MergeSkill(name="merge_skill", inputs=[text_input, image_text_input, offsetstex_input], outputs=[merge_text_output],
