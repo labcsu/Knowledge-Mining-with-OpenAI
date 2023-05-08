@@ -68,7 +68,8 @@ def create_semantic_search_index():
             name=KB_SEM_INDEX_NAME,
             fields=[
                 SimpleField(name="id", type="Edm.String", key=True),
-                SearchableField(name="content", type="Edm.String", analyzer_name="en.microsoft"),
+                SearchableField(name="text", type="Edm.String", analyzer_name="en.lucene"),
+                SearchableField(name="text_en", type="Edm.String", analyzer_name="en.lucene"),
                 SimpleField(name="category", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="sourcefile", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="container", type="Edm.String", filterable=True, facetable=True),
@@ -80,7 +81,7 @@ def create_semantic_search_index():
                 configurations=[SemanticConfiguration(
                     name='default',
                     prioritized_fields=PrioritizedFields(
-                        title_field=None, prioritized_content_fields=[SemanticField(field_name='content')]))])
+                        title_field=None, prioritized_content_fields=[SemanticField(field_name='text'),SemanticField(field_name='text_en')]))])
         )
 
         try:
@@ -140,7 +141,8 @@ def index_semantic_sections(sections):
     for s in sections:
         dd = {
             "id": s['id'],
-            "content": s['text_en'],
+            "text": s['text'],
+            "text_en": s['text_en'],
             "category": s['access'],
             "sourcefile": s['doc_url'],
             "orig_lang": s['orig_lang'],
