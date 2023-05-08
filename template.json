@@ -726,6 +726,10 @@
                             "value": "1"
                         } ,
                         {
+                            "name": "USE_COG_VECSEARCH",
+                            "value": "0"
+                        } ,
+                        {
                             "name": "REDIS_PORT",
                             "value": "[parameters('ExistingRedisResourcePort')]"
                         } ,
