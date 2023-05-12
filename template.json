@@ -10,7 +10,7 @@
         },
         "UseRestrictivePrompt": {
             "defaultValue": "no",
-            "type": "String",
+            "type": "string",
             "allowedValues": ["yes", "no"],
              "metadata": {
                 "description": "If 'no', a less restrictive prompt is applied to the OpenAI Completion API. The GPT model is instructed to look for answers in the Knowledge Base, and will result in no answers coming back as 'Sorry, the query did not find a good match. Please rephrase your question'. If 'yes', then the existing restrictive prompt will be in place, as the GPT model is requested to look for answers only, and strictly only, in the Knowledge Base."
@@ -18,7 +18,7 @@
         },
         "DeployNewOpenAIResource": {
             "defaultValue": "no",
-            "type": "String",
+            "type": "string",
             "allowedValues": ["yes", "no"],
              "metadata": {
                 "description": "If 'no', then please supply the endpoint and key of the existing OpenAI resource in the below two fields. If 'yes', then please choose the location of the new OpenAI resource."
@@ -26,15 +26,15 @@
         },
         "ExistingOpenAIResourceEndpoint": {
             "defaultValue": "",    
-            "type": "String"
+            "type": "string"
         },
         "ExistingOpenAIResourceKey": {
             "defaultValue": "",   
-            "type": "String"
+            "type": "string"
         },
         "NewOpenAIResource": {
             "defaultValue": "[concat('oai', parameters('ResourceSuffix'))]",   
-            "type": "String"
+            "type": "string"
         },
         "NewOpenAIResourceLocation": {
             "type": "string",
@@ -47,7 +47,7 @@
         },
         "DeployNewRedisResource": {
             "defaultValue": "no",
-            "type": "String",
+            "type": "string",
             "allowedValues": ["yes", "no"],
              "metadata": {
                 "description": "If 'no', then please supply the endpoint and key of the existing Redis resource in the below two fields."
@@ -55,19 +55,19 @@
         },
         "ExistingRedisResourcePort": {
             "defaultValue": "10000",
-            "type": "String"
+            "type": "string"
         },
         "ExistingRedisResourceEndpoint": {
             "defaultValue": "",    
-            "type": "String"
+            "type": "string"
         },
         "ExistingRedisResourceKey": {
             "defaultValue": "",   
-            "type": "String"
+            "type": "string"
         },
         "UseBing": {
             "defaultValue": "no",
-            "type": "String",
+            "type": "string",
             "allowedValues": ["yes", "no"],
              "metadata": {
                 "description": "If 'yes', Bing will be used as one of the tools for the LLMs to find answers. If 'no', Bing will not be used."
@@ -75,55 +75,59 @@
         },
         "ExistingBingSearchURL": {
             "defaultValue": "https://api.bing.microsoft.com/v7.0/search",    
-            "type": "String"
+            "type": "string"
         },
         "ExistingBingSubscriptionKey": {
             "defaultValue": "",   
-            "type": "String"
+            "type": "string"
         },
         "ListOfCommaSeparatedURLs": {
             "defaultValue": "",    
-            "type": "String"
+            "type": "string"
         },
         "RedisEnterprise": {
             "defaultValue":  "[concat('redisdb', parameters('ResourceSuffix'))]", 
-            "type": "String"
+            "type": "string"
         },
         "FunctionApp": {
             "defaultValue": "[concat('funcapp', parameters('ResourceSuffix'))]", 
-            "type": "String"
+            "type": "string"
+        },
+        "AppService": {
+            "defaultValue": "[concat('appservice', parameters('ResourceSuffix'))]", 
+            "type": "string"
         },
         "ServerFarm": {
             "defaultValue": "[concat('servfarm', parameters('ResourceSuffix'))]",  
-            "type": "String"
+            "type": "string"
         },
         "CognitiveSearch": {
             "defaultValue": "[concat('search', parameters('ResourceSuffix'))]",  
-            "type": "String"
+            "type": "string"
         },
         "StorageAccount": {
             "defaultValue": "[replace(concat('storage', parameters('ResourceSuffix')), '-', '')]",  
-            "type": "String"
+            "type": "string"
         },
         "EventGrid": {
             "defaultValue": "[concat('evgrid', parameters('ResourceSuffix'))]",   
-            "type": "String"
+            "type": "string"
         },
         "ServiceBus": {
             "defaultValue": "[concat('bus', parameters('ResourceSuffix'))]",   
-            "type": "String"
+            "type": "string"
         },
         "CognitiveServices": {
             "defaultValue": "[concat('cogserv', parameters('ResourceSuffix'))]",   
-            "type": "String"
+            "type": "string"
         },
         "Cosmos": {
             "defaultValue": "[concat('cosmos', parameters('ResourceSuffix'))]",
-            "type": "String"
+            "type": "string"
         },
         "LogAnalystics": {
             "defaultValue": "[concat('loganal', parameters('ResourceSuffix'))]",
-            "type": "String"
+            "type": "string"
         }
         
     },
@@ -1089,6 +1093,494 @@
             ],
             "properties": {
                 "siteName": "km-aoi-funcapp",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-09-01",
+            "name": "[parameters('AppService')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarm'))]",
+                "[resourceId('Microsoft.Insights/components', parameters('FunctionApp'))]",
+                "[resourceId('Microsoft.Web/sites', parameters('FunctionApp'))]"
+            ],
+            "tags": {
+                  },
+            "kind": "app,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('AppService'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('AppService'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarm'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "PYTHON|3.9",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": true,
+                    "http20Enabled": false,
+                    "minimumElasticInstanceCount": 1,
+                    "appSettings": [
+                        {
+                            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+                            "value": "true"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "TRANSLATION_ENDPOINT",
+                            "value": "https://api.cognitive.microsofttranslator.com"
+                        },
+                        {
+                            "name": "TRANSLATION_API_KEY",
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('CognitiveServices')), '2021-10-01').key1]"
+                        }, 
+                        {
+                            "name": "TRANSLATION_LOCATION",
+                            "value": "[resourceGroup().location]"
+                        },
+                        {
+                            "name": "COG_SERV_ENDPOINT",
+                            "value": "[concat('https://', parameters('CognitiveServices'), '.cognitiveservices.azure.com/')]"
+                        },
+                        {
+                            "name": "COG_SERV_KEY",
+                            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('CognitiveServices')), '2021-10-01').key1]"
+                        }, 
+                        {
+                            "name": "OPENAI_RESOURCE_ENDPOINT",
+                            "value": "[if(equals(parameters('DeployNewOpenAIResource'),'yes'), concat('https://', parameters('NewOpenAIResource'), '.openai.azure.com/'),  parameters('ExistingOpenAIResourceEndpoint'))]"  
+                        },
+                        {
+                            "name": "OPENAI_API_KEY",
+                            "value": "[if(equals(parameters('DeployNewOpenAIResource'),'yes'), listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('NewOpenAIResource')), '2021-10-01').key1,  parameters('ExistingOpenAIResourceKey'))]"  
+                        },
+                        {
+                            "name": "KB_BLOB_CONN_STR",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('StorageAccount'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('StorageAccount')), '2019-06-01').keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                        },
+                        {
+                            "name": "COSMOS_URI",
+                            "value": "[concat('https://', parameters('Cosmos'),'.documents.azure.com:443/')]"
+                        },
+                        {
+                            "name": "COSMOS_KEY",
+                            "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('Cosmos')), '2022-05-15').primaryMasterKey]"
+                        },
+                        {
+                            "name": "COG_SEARCH_ENDPOINT",
+                            "value": "[concat('https://', parameters('CognitiveSearch'), '.search.windows.net')]" 
+                        },
+                        {
+                            "name": "SERVICEBUS_CONN_STR",
+                            "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/authorizationRules/', parameters('ServiceBus'),  'RootManageSharedAccessKey'), '2021-11-01').primaryConnectionString]"
+                        },
+                        {
+                            "name": "REDIS_PASSWORD",
+                            "value": "[ if(equals(parameters('DeployNewRedisResource'),'yes'), listKeys(resourceId('Microsoft.Cache/RedisEnterprise/databases', parameters('RedisEnterprise'),  'default'), '2022-01-01').primaryKey, parameters('ExistingRedisResourceKey'))]"
+                        }, 
+                        {
+                            "name": "REDIS_ADDR",
+                            "value": "[ if(equals(parameters('DeployNewRedisResource'),'yes'), concat( parameters('RedisEnterprise'), '.', resourceGroup().location, '.redisenterprise.cache.azure.net'), parameters('ExistingRedisResourceEndpoint'))]"
+                        }, 
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "python"
+                        } ,
+                        {
+                            "name": "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT",
+                            "value": "1"
+                        } ,
+                        {
+                            "name": "KB_INDEX_NAME",
+                            "value": "km-openai"
+                        } ,
+                        {
+                            "name": "KB_INDEXER_NAME",
+                            "value": "km-openai-indexer"
+                        } ,
+                        {
+                            "name": "KB_DATA_SOURCE_NAME",
+                            "value": "km-openai-docs"
+                        } ,
+                        {
+                            "name": "KB_SKILLSET_NAME",
+                            "value": "km-openai-skills"
+                        } ,
+                        {
+                            "name": "DATABASE_MODE",
+                            "value": "1"
+                        } ,
+                        {
+                            "name": "USE_COG_VECSEARCH",
+                            "value": "0"
+                        } ,
+                        {
+                            "name": "REDIS_PORT",
+                            "value": "[parameters('ExistingRedisResourcePort')]"
+                        } ,
+                        {
+                            "name": "REDIS_INDEX_NAME",
+                            "value": "acs_emb_index"
+                        } ,
+                        {
+                            "name": "VECTOR_FIELD_IN_REDIS",
+                            "value": "item_vector"
+                        } ,
+                        {
+                            "name": "NUMBER_PRODUCTS_INDEX",
+                            "value": "1000"
+                        } ,
+                        {
+                            "name": "CATEGORYID",
+                            "value": "KM_OAI_CATEGORY"
+                        } , 
+                        {
+                            "name": "EMBCATEGORYID",
+                            "value": "KM_OAI_EMB_CATEGORY"
+                        } ,
+                        {
+                            "name": "COSMOS_DB_NAME",
+                            "value": "KM_OAI_DB"
+                        } ,
+                        {
+                            "name": "KB_BLOB_CONTAINER",
+                            "value": "kmoaidemo"
+                        } ,
+                        {
+                            "name": "OUTPUT_BLOB_CONTAINER",
+                            "value": "kmoaiprocessed"
+                        } ,
+                        {
+                            "name": "CHOSEN_QUERY_EMB_MODEL",
+                            "value": "text-embedding-ada-002"
+                        } ,
+                        {
+                            "name": "CHOSEN_COMP_MODEL",
+                            "value": "gpt-35-turbo"
+                        } ,
+                        {
+                            "name": "MAX_QUERY_TOKENS",
+                            "value": "500"
+                        } ,
+                        {
+                            "name": "MAX_OUTPUT_TOKENS",
+                            "value": "750"
+                        } ,
+                        {
+                            "name": "ADA_002_EMBED_NUM_DIMS",
+                            "value": "1536"
+                        } ,
+                        {
+                            "name": "ADA_002_MODEL_MAX_TOKENS",
+                            "value": "4095"
+                        } ,
+                        {
+                            "name": "ADA_002_EMBEDDING_MODEL",
+                            "value": "text-embedding-ada-002"
+                        } ,
+                        {
+                            "name": "ADA_EMBEDDING_ENCODING",
+                            "value": "cl100k_base"
+                        } ,
+                        {
+                            "name": "DAVINCI_003_EMBED_NUM_DIMS",
+                            "value": "12288"
+                        } ,
+                        {
+                            "name": "DAVINCI_003_MODEL_MAX_TOKENS",
+                            "value": "4000"
+                        } ,
+                        {
+                            "name": "DAVINCI_003_EMB_MAX_TOKENS",
+                            "value": "2047"
+                        } ,
+                        {
+                            "name": "DAVINCI_003_COMPLETIONS_MODEL",
+                            "value": "text-davinci-003"
+                        } ,
+                        {
+                            "name": "DAVINCI_003_EMBEDDING_MODEL",
+                            "value": "text-search-davinci-doc-001"
+                        } ,
+                        {
+                            "name": "DAVINCI_003_QUERY_EMB_MODEL",
+                            "value": "text-search-davinci-query-001"
+                        } ,
+                        {
+                            "name": "DAVINCI_EMBEDDING_ENCODING",
+                            "value": "p50k_base"
+                        } , 
+                        {
+                            "name": "GPT35_TURBO_COMPLETIONS_MODEL",
+                            "value": "gpt-35-turbo"
+                        } ,
+                        {
+                            "name": "GPT35_TURBO_COMPLETIONS_MAX_TOKENS",
+                            "value": "8193"
+                        } ,
+                        {
+                            "name": "GPT35_TURBO_COMPLETIONS_ENCODING",
+                            "value": "cl100k_base"
+                        } ,
+                        {
+                            "name": "CHOSEN_EMB_MODEL",
+                            "value": "text-embedding-ada-002"
+                        } ,
+                        {
+                            "name": "OVERLAP_TEXT",
+                            "value": "150"
+                        } ,
+                        {
+                            "name": "SMALL_EMB_TOKEN_NUM",
+                            "value": "750"
+                        } ,
+                        {
+                            "name": "MEDIUM_EMB_TOKEN_NUM",
+                            "value": "0"
+                        } ,
+                        {
+                            "name": "LARGE_EMB_TOKEN_NUM",
+                            "value": "0"
+                        } ,
+                        {
+                            "name": "X_LARGE_EMB_TOKEN_NUM",
+                            "value": "0"
+                        } ,
+                        {
+                            "name": "NUM_TOP_MATCHES",
+                            "value": "2"
+                        },
+                        {
+                            "name": "FR_CONTAINER",
+                            "value": "kmoaiforms"
+                        },
+                        {
+                            "name": "RESTRICTIVE_PROMPT",
+                            "value": "[ parameters('UseRestrictivePrompt')]" 
+                        },
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('StorageAccount'), listKeys(parameters('StorageAccount'), '2021-09-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "AzureWebJobsDashboard",
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', parameters('StorageAccount'), listKeys(parameters('StorageAccount'), '2021-09-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "USE_BING",
+                            "value": "[ parameters('UseBing')]"
+                        } ,
+                        {
+                            "name": "BING_SEARCH_URL",
+                            "value": "[ parameters('ExistingBingSearchURL')]"
+                        },
+                        {
+                            "name": "BING_SUBSCRIPTION_KEY",
+                            "value":"[ parameters('ExistingBingSubscriptionKey')]"
+                        },
+                         {
+                            "name": "KB_SEM_INDEX_NAME",
+                            "value": "km-openai-sem"
+                        } ,
+                        {
+                            "name": "MAX_HISTORY_TOKENS",
+                            "value": "1000"
+                        } ,
+                        {
+                            "name": "CONVERSATION_TTL_SECS",
+                            "value": "172800"
+                        } ,
+                        {
+                            "name": "MAX_SEARCH_TOKENS",
+                            "value": "2500"
+                        },
+                        {
+                            "name": "PRE_CONTEXT",
+                            "value": "500"
+                        },
+                        {
+                            "name": "COG_SEARCH_ADMIN_KEY",
+                            "value": "[listAdminKeys(parameters('CognitiveSearch'), '2022-09-01').primaryKey]"
+                        },
+                        {
+                            "name": "LIST_OF_COMMA_SEPARATED_URLS",
+                            "value": "[ parameters('ListOfCommaSeparatedURLs')]" 
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('Microsoft.Insights/components', parameters('FunctionApp')), '2020-02-02').InstrumentationKey]" 
+                        },
+                        {
+                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                            "value": "[reference(resourceId('Microsoft.Insights/components', parameters('FunctionApp')), '2020-02-02').ConnectionString]" 
+                        }
+                    ]
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "publicNetworkAccess": "Enabled",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('AppService'), '/ftp')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('AppService'))]"
+            ],
+            "tags": {
+
+             },
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('AppService'), '/scm')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('AppService'))]"
+            ],
+            "tags": {
+
+                    },
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('AppService'), '/web')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('AppService'))]"
+            ],
+            "tags": {
+
+               },
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.9",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$km-aoi-appservice",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": true,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "publicNetworkAccess": "Enabled",
+                "cors": {
+                    "allowedOrigins": [
+                        "https://portal.azure.com"
+                    ],
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "FtpsOnly",
+                "preWarmedInstanceCount": 1,
+                "minimumElasticInstanceCount": 1,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2022-09-01",
+            "name": "[concat(parameters('AppService'), '/', parameters('AppService'), '.azurewebsites.net')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('AppService'))]"
+            ],
+            "properties": {
+                "siteName": "km-aoi-appservice",
                 "hostNameType": "Verified"
             }
         },
