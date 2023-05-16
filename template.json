@@ -1137,11 +1137,8 @@
                     "alwaysOn": true,
                     "http20Enabled": false,
                     "minimumElasticInstanceCount": 1,
+                    "appCommandLine": "python3 -m venv antenv\nsource ./antenv/bin/activate\npip install -r requirements.txt\n\ngunicorn app:app",
                     "appSettings": [
-                        {
-                            "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
-                            "value": "true"
-                        },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~4"
@@ -1482,8 +1479,21 @@
             }
         },
         {
+            "type": "Microsoft.Web/sites/sourcecontrols",
+            "apiVersion": "2022-03-01",
+            "name": "[format('{0}/{1}', parameters('AppService'), 'web')]",
+            "properties": {
+            "repoUrl": "https://github.com/labcsu/Knowledge-Mining-with-OpenAI/",
+            "branch": "main",
+            "isManualIntegration": true
+            },
+            "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('AppService'))]"
+            ]
+        },
+        {
             "type": "Microsoft.Web/sites/config",
-            "apiVersion": "2022-09-01",
+            "apiVersion": "2022-03-01",
             "name": "[concat(parameters('AppService'), '/web')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -1573,7 +1583,7 @@
         },
         {
             "type": "Microsoft.Web/sites/hostNameBindings",
-            "apiVersion": "2022-09-01",
+            "apiVersion": "2022-03-01",
             "name": "[concat(parameters('AppService'), '/', parameters('AppService'), '.azurewebsites.net')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
