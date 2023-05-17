@@ -362,10 +362,10 @@
             "name": "[parameters('ServerFarm')]",
             "location": "[resourceGroup().location]",
             "sku": {
-                "name": "B3",
-                "tier": "Basic",
-                "size": "B3",
-                "family": "B",
+                "name": "P2V3",
+                "tier": "PremiumV2",
+                "size": "P2V3",
+                "family": "P",
                 "capacity": 1
             },
             "kind": "linux",
