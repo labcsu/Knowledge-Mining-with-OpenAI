@@ -25,3 +25,4 @@ azure-ai-textanalytics
 langchain==0.0.139
 flask
 flask-socketio
+eventlet
