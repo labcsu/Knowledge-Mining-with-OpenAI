@@ -1137,7 +1137,7 @@
                     "alwaysOn": true,
                     "http20Enabled": false,
                     "minimumElasticInstanceCount": 1,
-                    "appCommandLine": "python3 -m venv antenv\nsource ./antenv/bin/activate\npip install -r requirements.txt\n\ngunicorn app:app",
+                    "appCommandLine": "python3 -m venv antenv\nsource ./antenv/bin/activate\npip install -r requirements.txt\n\ngunicorn --timeout 0 app:app",
                     "appSettings": [
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",

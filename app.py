@@ -17,7 +17,7 @@ from utils import redis_helpers
 global_params_dict = {
     'enable_unified_search': False,
     'enable_redis_search': True,
-    'enable_cognitive_search': True,
+    'enable_cognitive_search': False,
     'evaluate_step': False,
     'check_adequacy': False,
     'check_intent': False
